@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: expensetracker
+  namespace: expense-tracker
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: expensetracker
+  template:
+    metadata:
+      labels:
+        app: expensetracker
+    spec:
+      containers:
+        - name: expensetracker
+          image: acrexpensetrackerrg.azurecr.io/expensetracker-web:v1
+          ports:
+            - containerPort: 8000
+

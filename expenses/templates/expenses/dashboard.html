@@ -1,0 +1,162 @@
+{% extends 'expenses/base.html' %}
+
+{% block title %}Dashboard - Expense Tracker{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <h1 class="display-6 mb-0">Dashboard</h1>
+        <p class="text-muted">Your expense overview</p>
+    </div>
+</div>
+
+<!-- Stats Cards -->
+<div class="row mb-4">
+    <div class="col-md-4 mb-3">
+        <div class="card stat-card bg-primary text-white h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-subtitle mb-2 text-white-50">This Month</h6>
+                        <h2 class="card-title mb-0">${{ total_this_month|floatformat:2 }}</h2>
+                    </div>
+                    <i class="bi bi-calendar-month display-4 opacity-50"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4 mb-3">
+        <div class="card stat-card bg-success text-white h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-subtitle mb-2 text-white-50">Transactions</h6>
+                        <h2 class="card-title mb-0">{{ expense_count }}</h2>
+                    </div>
+                    <i class="bi bi-receipt display-4 opacity-50"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4 mb-3">
+        <div class="card stat-card bg-info text-white h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-subtitle mb-2 text-white-50">All Time Total</h6>
+                        <h2 class="card-title mb-0">${{ all_time_total|floatformat:2 }}</h2>
+                    </div>
+                    <i class="bi bi-piggy-bank display-4 opacity-50"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Category Breakdown -->
+    <div class="col-md-6 mb-4">
+        <div class="card h-100">
+            <div class="card-header bg-white">
+                <h5 class="mb-0"><i class="bi bi-pie-chart me-2"></i>Spending by Category</h5>
+            </div>
+            <div class="card-body">
+                {% if category_breakdown %}
+                    {% for cat in category_breakdown %}
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between mb-1">
+                            <span>
+                                <span class="category-dot" style="background-color: {{ cat.category__color|default:'#6c757d' }}"></span>
+                                {{ cat.category__name|default:"Uncategorized" }}
+                            </span>
+                            <strong>${{ cat.total|floatformat:2 }}</strong>
+                        </div>
+                        <div class="progress" style="height: 8px;">
+                            {% widthratio cat.total total_this_month 100 as percentage %}
+                            <div class="progress-bar" role="progressbar"
+                                 style="width: {{ percentage }}%; background-color: {{ cat.category__color|default:'#6c757d' }}">
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <p class="text-muted text-center py-4">No expenses this month yet.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Expenses -->
+    <div class="col-md-6 mb-4">
+        <div class="card h-100">
+            <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="bi bi-clock-history me-2"></i>Recent Expenses</h5>
+                <a href="{% url 'expense_list' %}" class="btn btn-sm btn-outline-primary">View All</a>
+            </div>
+            <div class="card-body">
+                {% if recent_expenses %}
+                    <ul class="list-group list-group-flush">
+                        {% for expense in recent_expenses %}
+                        <li class="list-group-item d-flex justify-content-between align-items-center px-0">
+                            <div>
+                                <strong>{{ expense.description }}</strong>
+                                <br>
+                                <small class="text-muted">
+                                    {% if expense.category %}
+                                        <span class="category-dot" style="background-color: {{ expense.category.color }}"></span>
+                                        {{ expense.category.name }}
+                                    {% else %}
+                                        Uncategorized
+                                    {% endif %}
+                                    &middot; {{ expense.date }}
+                                </small>
+                            </div>
+                            <span class="badge bg-secondary rounded-pill">${{ expense.amount }}</span>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <p class="text-muted text-center py-4">No expenses yet. <a href="{% url 'expense_create' %}">Add one!</a></p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Monthly Trend -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header bg-white">
+                <h5 class="mb-0"><i class="bi bi-graph-up me-2"></i>Monthly Trend</h5>
+            </div>
+            <div class="card-body">
+                {% if monthly_trend %}
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                {% for trend in monthly_trend %}
+                                <th class="text-center">{{ trend.month|date:"M Y" }}</th>
+                                {% endfor %}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                {% for trend in monthly_trend %}
+                                <td class="text-center">
+                                    <strong>${{ trend.total|floatformat:2 }}</strong>
+                                </td>
+                                {% endfor %}
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                    <p class="text-muted text-center py-4">Not enough data to show trends yet.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
